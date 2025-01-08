@@ -1,0 +1,32 @@
+From 48d427990510f57386e3ba8b44292759a45e8376 Mon Sep 17 00:00:00 2001
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Date: Tue, 21 Jan 2025 15:23:03 +0100
+Subject: [PATCH 2/2] disable -Werror=undef
+
+With Qt v6.8 QT_BUILDING_QT in Qt headers triggers this warning which
+is interpreted as an error and causes a build failure. Disable it.
+
+Upstream-Status: Inappropriate [yocto-specific]
+
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+---
+ kde-modules/KDECompilerSettings.cmake | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/kde-modules/KDECompilerSettings.cmake b/kde-modules/KDECompilerSettings.cmake
+index 97657fb..3f6ed05 100644
+--- a/kde-modules/KDECompilerSettings.cmake
++++ b/kde-modules/KDECompilerSettings.cmake
+@@ -580,9 +580,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${_KDE_GCC_COMMON_WARNING_FLAGS} -Wnon-virtual-dtor -Woverloaded-virtual")
+     # Make some warnings errors
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=return-type -Werror=init-self")
+-    if (KDE_INTERNAL_COMPILERSETTINGS_LEVEL VERSION_GREATER_EQUAL 5.96.0)
+-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=undef")
+-    endif()
+ elseif(MSVC)
+   # similar to -Werror=return-type
+   # https://learn.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-level-1-c4715?view=msvc-170
+-- 
+2.45.2
+
