@@ -1,6 +1,3 @@
-# SPDX-License-Identifier: MIT
-# SPDX-FileCopyrightText: 2025 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-
 SUMMARY = "Take photos and videos with your webcam, with fun graphical effects"
 SECTION = "x11/gnome"
 LICENSE = "GPL-2.0-or-later"
@@ -23,6 +20,7 @@ DEPENDS += " \
 
 GTKDOC_MESON_OPTION = "gtk_doc"
 
+# Man page build wants to access sourceforge
 EXTRA_OEMESON += "-Dman=false"
 
-FILES:${PN} += "/usr/share/"
+FILES:${PN} += "${datadir}"
