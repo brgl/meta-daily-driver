@@ -50,10 +50,6 @@ IMAGE_INSTALL_DEV = " \
     diffutils \
 "
 
-IMAGE_INSTALL_BROWSER = " \
-    chromium-ozone-wayland \
-"
-
 IMAGE_INSTALL_SYSTEM = " \
     avahi-daemon \
     avahi-utils \
@@ -136,7 +132,6 @@ IMAGE_INSTALL = " \
     ${IMAGE_INSTALL_KDE} \
     ${IMAGE_INSTALL_SYSTEM} \
     ${IMAGE_INSTALL_SSH} \
-    ${IMAGE_INSTALL_BROWSER} \
     ${IMAGE_INSTALL_GAMES} \
     ${IMAGE_INSTALL_E2FS} \
     ${IMAGE_INSTALL_GSTREAMER} \
