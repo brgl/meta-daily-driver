@@ -1,0 +1,104 @@
+#!/bin/sh
+
+set -e
+
+INSTALL_DEVICE="@INSTALL_DEVICE@"
+ROOTFS_SRC=${INSTALL_DEVICE}2
+TARGET_DEVICE="@TARGET_DEVICE@"
+
+BOOT_PART=${TARGET_DEVICE}p1
+SWAP_PART=${TARGET_DEVICE}p2
+ROOTFS_PART=${TARGET_DEVICE}p3
+DATA_PART=${TARGET_DEVICE}p4
+
+BOOTFS_MNT="/mnt/boot_src"
+BOOTFS_SRC=${INSTALL_DEVICE}1
+
+DTB_FILE="@WKS_DEVICETREE@"
+
+whiptail --yesno "This will WIPE the hard drive on this machine and install the Daily Driver distro, are you sure?" 10 50
+if [ "$?" = "1" ]
+then
+	exit 0
+fi
+
+reset
+
+EFI_SIZE=512
+ROOTFS_SIZE=$(parted -sm $INSTALL_DEVICE unit MB print 2> /dev/null | awk -F: 'NR==4 { print $4 }' | sed 's/MB//')
+SWAP_SIZE=8192
+
+SWAP_START=$EFI_SIZE
+SWAP_END=$(expr $SWAP_START + $SWAP_SIZE)
+ROOTFS_START=$SWAP_END
+ROOTFS_END=$(expr $ROOTFS_START + $ROOTFS_SIZE)
+DATA_START=$ROOTFS_END
+
+echo "Installing the system to $TARGET_DEVICE"
+echo "EFI partition size: $EFI_SIZE MB"
+echo "Swap space size: $SWAP_SIZE MB"
+echo "Rootfs size: $ROOTFS_SIZE MB"
+
+echo "Deleting partition table on ${TARGET_DEVICE} ..."
+dd if=/dev/zero of=${TARGET_DEVICE} bs=512 count=35
+
+echo "Creating new partition table on ${TARGET_DEVICE} ..."
+parted -s $TARGET_DEVICE mklabel gpt
+
+echo "Creating the boot partition ..."
+parted -s $TARGET_DEVICE mkpart boot fat32 0% $EFI_SIZE
+parted -s $TARGET_DEVICE set 1 boot on
+
+echo "Creating swap space ..."
+parted -s $TARGET_DEVICE mkpart swap linux-swap $SWAP_START $SWAP_END
+
+echo "Creating the rootfs partition ..."
+parted -s $TARGET_DEVICE mkpart root ext4 $ROOTFS_START $ROOTFS_END
+
+echo "Creating the data partition ..."
+parted -s $TARGET_DEVICE mkpart data ext4 $DATA_START 100%
+
+partprobe
+
+echo "Copying rootfs data from $ROOTFS_SRC to $ROOTFS_PART"
+dd if=$ROOTFS_SRC | pv > $ROOTFS_PART
+
+echo "Formating $BOOT_PART to vfat ..."
+mkfs.vfat $BOOT_PART
+
+echo "Formatting swap space ..."
+mkswap $SWAP_PART
+
+echo "Formatting data partition to ext4 ..."
+mkfs.ext4 -F $DATA_PART
+
+echo "Installing bootloader ..."
+mkdir -p $BOOTFS_MNT
+mount $BOOTFS_SRC $BOOTFS_MNT
+mount $BOOT_PART /boot
+mkdir -p /boot/loader/entries
+cp -rv $BOOTFS_MNT/EFI $BOOTFS_MNT/Image $BOOTFS_MNT/$DTB_FILE /boot
+dracut
+
+cat > /boot/loader/loader.conf << EOL
+default boot
+timeout 5
+EOL
+
+cat > /boot/loader/entries/boot.conf << EOL
+title boot
+linux /Image
+options root=$ROOTFS_PART clk_ignore_unused pd_ignore_unused regulator_ignore_unused arm64.nopauth vt.handoff=7
+initrd /initramfs-$(uname -r).img
+devicetree /$DTB_FILE
+EOL
+
+sync
+umount /boot
+umount $BOOTFS_MNT
+
+echo "Installation complete, remove the installation medium and press ENTER ..."
+
+read
+
+reboot

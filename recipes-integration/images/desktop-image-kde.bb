@@ -8,6 +8,11 @@ inherit features_check core-image
 
 REQUIRED_DISTRO_FEATURES = "wayland systemd"
 
+IMAGE_ROOTFS_SIZE = "16777216"
+
+do_image_wic[depends] += "${INITRAMFS_IMAGE}:do_image_complete"
+do_image_wic[depends] += "${PN}:do_image_ext4"
+
 IMAGE_FEATURES += " \
     dev-pkgs \
     doc-pkgs \

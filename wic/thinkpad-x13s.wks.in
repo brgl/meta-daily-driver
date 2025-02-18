@@ -1,10 +1,8 @@
 # SPDX-License-Identifier: MIT
 # SPDX-FileCopyrightText: 2025 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
-part /boot --source bootimg-efi --sourceparams="loader=${EFI_PROVIDER},initrd=${INITRAMFS_IMAGE}-${MACHINE}.${INITRAMFS_FSTYPES},dtb=sc8280xp-lenovo-thinkpad-x13s.dtb" --label boot --active --align 1024 --use-uuid
+part /boot --source bootimg-efi --sourceparams="loader=${EFI_PROVIDER},initrd=${INITRAMFS_IMAGE}-${MACHINE}.${INITRAMFS_FSTYPES},dtb=${WKS_DEVICETREE}" --label boot --active --align 1024 --use-uuid
 
-part swap --size 8G --label swap --fstype=swap --use-uuid
+part --source rawcopy --sourceparams="file=${IMGDEPLOYDIR}/${IMAGE_BASENAME}-${MACHINE}.rootfs.ext4" --align 1024 --use-uuid
 
-part / --source rootfs --fstype=ext4 --label root --align 1024 --use-uuid
-
-bootloader --ptable gpt --timeout=5 --append="rootwait rootfstype=ext4 clk_ignore_unused pd_ignore_unused arm64.nopauth regulator_ignore_unused vt.handoff=7"
+bootloader --ptable gpt --timeout=5 --append="clk_ignore_unused pd_ignore_unused arm64.nopauth regulator_ignore_unused vt.handoff=7"
