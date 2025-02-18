@@ -76,7 +76,6 @@ IMAGE_INSTALL_SYSTEM = " \
     kmod \
     util-linux-rtcwake \
     bash \
-    coreutils \
     man-pages \
     groff \
     pv \
