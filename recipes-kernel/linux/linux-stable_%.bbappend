@@ -27,4 +27,5 @@ SRC_URI += " \
     file://dm-verity.cfg \
     file://i2c.cfg \
     file://i2cdev.cfg \
+    file://squashfs.cfg \
 "
