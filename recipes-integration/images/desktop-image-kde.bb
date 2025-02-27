@@ -95,6 +95,7 @@ IMAGE_INSTALL_SYSTEM = " \
     gnupg \
     kscreen \
     bc \
+    epiphany \
 "
 
 IMAGE_INSTALL_E2FS = " \
