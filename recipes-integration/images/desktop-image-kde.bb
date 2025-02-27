@@ -60,6 +60,7 @@ IMAGE_INSTALL_SYSTEM = " \
     dolphin \
     python3-pip \
     python3-virtualenv \
+    python3-modules \
     gparted \
     findutils \
     mpv \
