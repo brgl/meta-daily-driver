@@ -48,6 +48,8 @@ IMAGE_INSTALL_DEV = " \
     catch2-dev \
     googletest \
     diffutils \
+    nodejs-npm \
+    go \
 "
 
 IMAGE_INSTALL_SYSTEM = " \
