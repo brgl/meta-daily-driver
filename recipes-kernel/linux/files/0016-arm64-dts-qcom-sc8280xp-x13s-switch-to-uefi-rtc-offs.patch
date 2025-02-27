@@ -1,0 +1,54 @@
+From 6d14debf1934c95081889b191db6e0d811fc77cd Mon Sep 17 00:00:00 2001
+From: Johan Hovold <johan+linaro@kernel.org>
+Date: Wed, 15 Jan 2025 14:27:49 +0100
+Subject: [PATCH 16/16] arm64: dts: qcom: sc8280xp-x13s: switch to uefi rtc
+ offset
+
+On many Qualcomm platforms the PMIC RTC control and time registers are
+read-only so that the RTC time can not be updated. Instead an offset
+needs be stored in some machine-specific non-volatile memory, which a
+driver can take into account.
+
+Switch to using the Qualcomm specific UEFI variable that is used by the
+UEFI firmware (and Windows) to store the RTC offset.
+
+This specifically means that the RTC time will be synchronised between
+the UEFI firmware setup (or UEFI shell), Windows and Linux.
+
+Note however that Windows stores the RTC time in local time by default,
+while Linux typically uses UTC (i.e. as on X86).
+
+Signed-off-by: Johan Hovold <johan+linaro@kernel.org>
+---
+ .../boot/dts/qcom/sc8280xp-lenovo-thinkpad-x13s.dts   | 11 +----------
+ 1 file changed, 1 insertion(+), 10 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/qcom/sc8280xp-lenovo-thinkpad-x13s.dts b/arch/arm64/boot/dts/qcom/sc8280xp-lenovo-thinkpad-x13s.dts
+index d4c53845eebb..c191051c11ed 100644
+--- a/arch/arm64/boot/dts/qcom/sc8280xp-lenovo-thinkpad-x13s.dts
++++ b/arch/arm64/boot/dts/qcom/sc8280xp-lenovo-thinkpad-x13s.dts
+@@ -1090,20 +1090,11 @@ &pmk8280_pon_resin {
+ };
+ 
+ &pmk8280_rtc {
+-	nvmem-cells = <&rtc_offset>;
+-	nvmem-cell-names = "offset";
++	qcom,uefi-rtc-info;
+ 
+ 	status = "okay";
+ };
+ 
+-&pmk8280_sdam_6 {
+-	status = "okay";
+-
+-	rtc_offset: rtc-offset@bc {
+-		reg = <0xbc 0x4>;
+-	};
+-};
+-
+ &pmk8280_vadc {
+ 	channel@144 {
+ 		reg = <PM8350_ADC7_AMUX_THM1_100K_PU(1)>;
+-- 
+2.45.2
+

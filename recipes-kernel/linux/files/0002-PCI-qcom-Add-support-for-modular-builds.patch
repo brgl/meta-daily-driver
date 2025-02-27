@@ -1,0 +1,119 @@
+From f8d9b2cf71791385bc4d00db014039386d841ca2 Mon Sep 17 00:00:00 2001
+From: Johan Hovold <johan+linaro@kernel.org>
+Date: Thu, 24 Mar 2022 11:10:00 +0100
+Subject: [PATCH 02/16] PCI: qcom: Add support for modular builds
+
+Allow the Qualcomm PCIe controller driver to be built as a module, which
+is useful for multi-platform kernels as well as during development.
+
+Reviewed-by: Rob Herring <robh@kernel.org>
+Reviewed-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+Acked-by: Stanimir Varbanov <svarbanov@mm-sol.com>
+Signed-off-by: Johan Hovold <johan+linaro@kernel.org>
+---
+
+Changes in v4
+ - rebase on sorted Kconfig
+ - remove new debugfs interface on unbind
+
+Changes in v3
+ - rebase on post_deinit() removal patch
+ - rebase on host-init error-handling patch
+
+Changes in v2
+ - rebase on next-20220720 (adjust context)
+ - add Rob and Mani's reviewed-by tags
+---
+ drivers/pci/controller/dwc/Kconfig     |  2 +-
+ drivers/pci/controller/dwc/pcie-qcom.c | 30 ++++++++++++++++++++++++--
+ 2 files changed, 29 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/pci/controller/dwc/Kconfig b/drivers/pci/controller/dwc/Kconfig
+index b6d6778b0698..439efe680575 100644
+--- a/drivers/pci/controller/dwc/Kconfig
++++ b/drivers/pci/controller/dwc/Kconfig
+@@ -269,7 +269,7 @@ config PCIE_QCOM_COMMON
+ 	bool
+ 
+ config PCIE_QCOM
+-	bool "Qualcomm PCIe controller (host mode)"
++	tristate "Qualcomm PCIe controller (host mode)"
+ 	depends on OF && (ARCH_QCOM || COMPILE_TEST)
+ 	depends on PCI_MSI
+ 	select PCIE_DW_HOST
+diff --git a/drivers/pci/controller/dwc/pcie-qcom.c b/drivers/pci/controller/dwc/pcie-qcom.c
+index 91b7f9ec78bc..c609a1f3a5c8 100644
+--- a/drivers/pci/controller/dwc/pcie-qcom.c
++++ b/drivers/pci/controller/dwc/pcie-qcom.c
+@@ -20,6 +20,7 @@
+ #include <linux/kernel.h>
+ #include <linux/limits.h>
+ #include <linux/init.h>
++#include <linux/module.h>
+ #include <linux/of.h>
+ #include <linux/pci.h>
+ #include <linux/pm_opp.h>
+@@ -1579,6 +1580,11 @@ static irqreturn_t qcom_pcie_global_irq_thread(int irq, void *data)
+ 	return IRQ_HANDLED;
+ }
+ 
++static void qcom_pcie_deinit_debugfs(struct qcom_pcie *pcie)
++{
++	debugfs_remove(pcie->debugfs);
++}
++
+ static int qcom_pcie_probe(struct platform_device *pdev)
+ {
+ 	const struct qcom_pcie_cfg *pcie_cfg;
+@@ -1751,6 +1757,21 @@ static int qcom_pcie_probe(struct platform_device *pdev)
+ 	return ret;
+ }
+ 
++static void qcom_pcie_remove(struct platform_device *pdev)
++{
++	struct qcom_pcie *pcie = platform_get_drvdata(pdev);
++	struct device *dev = &pdev->dev;
++
++	qcom_pcie_deinit_debugfs(pcie);
++
++	dw_pcie_host_deinit(&pcie->pci->pp);
++
++	phy_exit(pcie->phy);
++
++	pm_runtime_put_sync(dev);
++	pm_runtime_disable(dev);
++}
++
+ static int qcom_pcie_suspend_noirq(struct device *dev)
+ {
+ 	struct qcom_pcie *pcie = dev_get_drvdata(dev);
+@@ -1861,6 +1882,7 @@ static const struct of_device_id qcom_pcie_match[] = {
+ 	{ .compatible = "qcom,pcie-x1e80100", .data = &cfg_sc8280xp },
+ 	{ }
+ };
++MODULE_DEVICE_TABLE(of, qcom_pcie_match);
+ 
+ static void qcom_fixup_class(struct pci_dev *dev)
+ {
+@@ -1880,12 +1902,16 @@ static const struct dev_pm_ops qcom_pcie_pm_ops = {
+ 
+ static struct platform_driver qcom_pcie_driver = {
+ 	.probe = qcom_pcie_probe,
++	.remove = qcom_pcie_remove,
+ 	.driver = {
+ 		.name = "qcom-pcie",
+-		.suppress_bind_attrs = true,
+ 		.of_match_table = qcom_pcie_match,
+ 		.pm = &qcom_pcie_pm_ops,
+ 		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
+ 	},
+ };
+-builtin_platform_driver(qcom_pcie_driver);
++module_platform_driver(qcom_pcie_driver);
++
++MODULE_AUTHOR("Stanimir Varbanov <svarbanov@mm-sol.com>");
++MODULE_DESCRIPTION("Qualcomm PCIe root complex driver");
++MODULE_LICENSE("GPL");
+-- 
+2.45.2
+

@@ -1,0 +1,28 @@
+From ed7b0e05b90af2255f379ed07bcdbce2990ffc0c Mon Sep 17 00:00:00 2001
+From: Johan Hovold <johan+linaro@kernel.org>
+Date: Thu, 19 May 2022 09:33:11 +0200
+Subject: [PATCH 03/16] ARM: qcom_defconfig: build PCIe driver as a module
+
+The Qualcomm PCIe controller driver can now be built as a module.
+
+Signed-off-by: Johan Hovold <johan+linaro@kernel.org>
+---
+ arch/arm/configs/qcom_defconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/configs/qcom_defconfig b/arch/arm/configs/qcom_defconfig
+index ec52ccece0ca..c57426362f0a 100644
+--- a/arch/arm/configs/qcom_defconfig
++++ b/arch/arm/configs/qcom_defconfig
+@@ -57,7 +57,7 @@ CONFIG_MAC80211=m
+ CONFIG_RFKILL=y
+ CONFIG_PCI=y
+ CONFIG_PCI_MSI=y
+-CONFIG_PCIE_QCOM=y
++CONFIG_PCIE_QCOM=m
+ CONFIG_DEVTMPFS=y
+ CONFIG_DEVTMPFS_MOUNT=y
+ CONFIG_MTD=y
+-- 
+2.45.2
+
