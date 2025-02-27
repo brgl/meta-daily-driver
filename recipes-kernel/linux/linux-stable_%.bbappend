@@ -5,6 +5,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 SRC_URI += " \
     file://ecryptfs.cfg \
+    file://efi.cfg \
     file://overlayfs.cfg \
     file://gpio-sim.cfg \
     file://dm-verity.cfg \
