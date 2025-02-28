@@ -2,19 +2,19 @@
 
 set -e
 
-INSTALL_DEVICE="@INSTALL_DEVICE@"
-ROOTFS_SRC=${INSTALL_DEVICE}2
-TARGET_DEVICE="@TARGET_DEVICE@"
+DD_INSTALL_DEVICE="@DD_INSTALL_DEVICE@"
+ROOTFS_SRC=${DD_INSTALL_DEVICE}2
+DD_TARGET_DEVICE="@DD_TARGET_DEVICE@"
 
-BOOT_PART=${TARGET_DEVICE}p1
-SWAP_PART=${TARGET_DEVICE}p2
-ROOTFS_PART=${TARGET_DEVICE}p3
-DATA_PART=${TARGET_DEVICE}p4
+BOOT_PART=${DD_TARGET_DEVICE}p1
+SWAP_PART=${DD_TARGET_DEVICE}p2
+ROOTFS_PART=${DD_TARGET_DEVICE}p3
+DATA_PART=${DD_TARGET_DEVICE}p4
 
 BOOTFS_MNT="/mnt/boot_src"
-BOOTFS_SRC=${INSTALL_DEVICE}1
+BOOTFS_SRC=${DD_INSTALL_DEVICE}1
 
-DTB_FILE="@WKS_DEVICETREE@"
+DTB_FILE="@DD_DEVICETREE@"
 
 whiptail --yesno "This will WIPE the hard drive on this machine and install the Daily Driver distro, are you sure?" 10 50
 if [ "$?" = "1" ]
@@ -25,7 +25,7 @@ fi
 reset
 
 EFI_SIZE=512
-ROOTFS_SIZE=$(parted -sm $INSTALL_DEVICE unit MB print 2> /dev/null | awk -F: 'NR==4 { print $4 }' | sed 's/MB//')
+ROOTFS_SIZE=$(parted -sm $DD_INSTALL_DEVICE unit MB print 2> /dev/null | awk -F: 'NR==4 { print $4 }' | sed 's/MB//')
 SWAP_SIZE=8192
 
 SWAP_START=$EFI_SIZE
@@ -34,29 +34,29 @@ ROOTFS_START=$SWAP_END
 ROOTFS_END=$(expr $ROOTFS_START + $ROOTFS_SIZE)
 DATA_START=$ROOTFS_END
 
-echo "Installing the system to $TARGET_DEVICE"
+echo "Installing the system to $DD_TARGET_DEVICE"
 echo "EFI partition size: $EFI_SIZE MB"
 echo "Swap space size: $SWAP_SIZE MB"
 echo "Rootfs size: $ROOTFS_SIZE MB"
 
-echo "Deleting partition table on ${TARGET_DEVICE} ..."
-dd if=/dev/zero of=${TARGET_DEVICE} bs=512 count=35
+echo "Deleting partition table on ${DD_TARGET_DEVICE} ..."
+dd if=/dev/zero of=${DD_TARGET_DEVICE} bs=512 count=35
 
-echo "Creating new partition table on ${TARGET_DEVICE} ..."
-parted -s $TARGET_DEVICE mklabel gpt
+echo "Creating new partition table on ${DD_TARGET_DEVICE} ..."
+parted -s $DD_TARGET_DEVICE mklabel gpt
 
 echo "Creating the boot partition ..."
-parted -s $TARGET_DEVICE mkpart boot fat32 0% $EFI_SIZE
-parted -s $TARGET_DEVICE set 1 boot on
+parted -s $DD_TARGET_DEVICE mkpart boot fat32 0% $EFI_SIZE
+parted -s $DD_TARGET_DEVICE set 1 boot on
 
 echo "Creating swap space ..."
-parted -s $TARGET_DEVICE mkpart swap linux-swap $SWAP_START $SWAP_END
+parted -s $DD_TARGET_DEVICE mkpart swap linux-swap $SWAP_START $SWAP_END
 
 echo "Creating the rootfs partition ..."
-parted -s $TARGET_DEVICE mkpart root ext4 $ROOTFS_START $ROOTFS_END
+parted -s $DD_TARGET_DEVICE mkpart root ext4 $ROOTFS_START $ROOTFS_END
 
 echo "Creating the data partition ..."
-parted -s $TARGET_DEVICE mkpart data ext4 $DATA_START 100%
+parted -s $DD_TARGET_DEVICE mkpart data ext4 $DATA_START 100%
 
 partprobe
 

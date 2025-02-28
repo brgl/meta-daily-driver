@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # SPDX-FileCopyrightText: 2025 Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
-part /boot --source bootimg-efi --sourceparams="loader=${EFI_PROVIDER},initrd=${INITRAMFS_IMAGE}-${MACHINE}.${INITRAMFS_FSTYPES},dtb=${WKS_DEVICETREE}" --label boot --active --align 1024 --use-uuid
+part /boot --source bootimg-efi --sourceparams="loader=${EFI_PROVIDER},initrd=${INITRAMFS_IMAGE}-${MACHINE}.${INITRAMFS_FSTYPES},dtb=${DD_DEVICETREE}" --label boot --active --align 1024 --use-uuid
 
 part --source rawcopy --sourceparams="file=${IMGDEPLOYDIR}/${IMAGE_BASENAME}-${MACHINE}.rootfs.ext4" --align 1024 --use-uuid
 

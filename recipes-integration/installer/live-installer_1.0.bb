@@ -19,9 +19,9 @@ RDEPENDS:${PN} = " \
 do_install() {
     install -d ${D}${bindir}
     install -m 0755 ${S}/installer.sh.in ${D}${bindir}/installer
-    sed -i -e "s,@INSTALL_DEVICE@,${INSTALL_DEVICE},g" ${D}${bindir}/installer
-    sed -i -e "s,@TARGET_DEVICE@,${TARGET_DEVICE},g" ${D}${bindir}/installer
-    sed -i -e "s,@WKS_DEVICETREE@,${WKS_DEVICETREE},g" ${D}${bindir}/installer
+    sed -i -e "s,@DD_INSTALL_DEVICE@,${DD_INSTALL_DEVICE},g" ${D}${bindir}/installer
+    sed -i -e "s,@DD_TARGET_DEVICE@,${DD_TARGET_DEVICE},g" ${D}${bindir}/installer
+    sed -i -e "s,@DD_DEVICETREE@,${DD_DEVICETREE},g" ${D}${bindir}/installer
 }
 
 do_compile[noexec] = "1"
