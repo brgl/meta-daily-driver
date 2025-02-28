@@ -101,6 +101,7 @@ IMAGE_INSTALL_SYSTEM = " \
     kscreen \
     bc \
     epiphany \
+    efibootmgr \
 "
 
 IMAGE_INSTALL_E2FS = " \
